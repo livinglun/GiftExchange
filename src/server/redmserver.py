@@ -39,32 +39,56 @@ class RedmHandler(BaseHTTPRequestHandler):
         self.end_headers()
 
         # expected path: /register?email=xxx@somewhere
-        cmdpath = self.path
-        print cmdpath
-        if cmdpath.startswith('/register'):
-            if '?' not in cmdpath:
-                self.wfile.write(ERROR_CMDER)
-                return
-            query = urllib.splitquery(cmdpath)
-            print 'query0', query[0]
-            print 'query1', query[1]
-            temp = query[1].split('=')
+        query = urllib.splitquery(self.path)
+        
+        if len(query) < 2:
+            self.wfile.write(ERROR_CMDER)
+            return
+            
+        service = query[0]
+        qrystmt = query[1] # query statement
+        print '[RedmHandler]service:', service
+        print '[RedmHandler]query:', qrystmt
+            
+        if service == '/register':
+            temp = qrystmt.split('=')
             param = temp[0]
             value = temp[1]
             
             # 1. check email format
+            if param != 'email':
+                self.wfile.write(ERROR_CMDER)
+                return
+                
             if not util.checkEmail(value):
                 self.wfile.write(ERROR_EMFMT)
                 return
+                
             # 2. check redeem times
-            
+            redmtime = len(dbm.getEmRedm(value))
+            if redmtime >= 3:
+                self.wfile.write(ERROR_EMLMT)
+                return
+                
             # 3. generate redeem code and check database
+            redmcode = None
+            loop = True
+            while loop:
+                redmcode = self.genRedmCode()
+                if not dbm.hasRedmCode(redmcode):
+                    loop = False
+                    
             # 4. save email and redeem code
+            dbm.saveEmRegi(value, redmcode)
+            
             # 5. return message
-            self.wfile.write('<xml><result>succss</result></xml>')
+            rpstmt = '<xml><result>email registration succss</result>\
+            <email>%s</email>\
+            <redmcode>%s</redmcode></xml>'%(value, redmcode)
+            self.wfile.write(rpstmt)
        
         # expected path: /redeem?email=xxx@somewhere&redmcode=xxxxxxxx
-        elif self.path.startswith('/redeem'):
+        elif service == '/redeem':
             # 1. check redeem code and email is in registration
             # 2. check redeem code is not in redeem record
             # 3. check email redeem times
@@ -74,6 +98,9 @@ class RedmHandler(BaseHTTPRequestHandler):
         
         else:
             self.wfile.write(ERROR_NOSRV)
+            
+    def genRedmCode(self):
+        return '1234abcd'
     
 if __name__=='__main__':
     svr = RedmServer()

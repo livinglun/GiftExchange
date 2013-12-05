@@ -19,4 +19,20 @@ class DBmanager:
             print '[DBmanager] database creation fail..'
             return 0
             
+    def hasRedmCode(self, code):
+        return False
+    
+    def getEmRedm(self, email):
+        testdata1 = ['01234567','12345678']
+        testdata2 = ['01234567','12345678','abcdefgh']
+        return testdata1
+        
+    def getEmRegi(self, email):
+        pass
+        
+    def saveEmRegi(self, email, redmcode):
+        pass
+        
+    def saveEmRedm(self, email, redmcode):
+        pass
     
