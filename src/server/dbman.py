@@ -28,11 +28,11 @@ class DBmanager:
         return testdata1
         
     def getEmRegi(self, email):
-        pass
+        return ['01234567','12345678','abcdefgh']
         
     def saveEmRegi(self, email, redmcode):
         pass
         
-    def saveEmRedm(self, email, redmcode):
+    def saveGtRedm(self, email, redmcode):
         pass
     

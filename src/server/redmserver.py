@@ -1,7 +1,7 @@
 ## file: redmserver is a http server that provide services to register email and redeem gift.
 
 from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
-import os,time, urllib, sqlite3
+import os,time, urllib, sqlite3, random
 import dbman, util
 
 DBPATH = 'redmdb.db'
@@ -15,6 +15,7 @@ ERROR_NOREG = '<xml><error>no such redeem code</error></xml>' # no such email an
 ERROR_RCUSE = '<xml><error>the redeem code has been used</error></xml>' # the redeem code has been used
 ERROR_NOSRV = '<xml><error>there provide no such service</error></xml>' # there is no such service
 
+GIFTLIST = ['gift01','gift02','gift03','gift04','gift05','gift06','gift07','gift08','gift09','gift10']
 
 class RedmServer:
     def __init__(self):
@@ -22,6 +23,7 @@ class RedmServer:
         # 1. check database is existed
         if not os.path.exists(DBPATH):
             self.dbm.createdatabase()
+            
         # 2. set parameter and start up the server
         server = HTTPServer
         httpd = server(('localhost',8080), RedmHandler)
@@ -89,18 +91,75 @@ class RedmHandler(BaseHTTPRequestHandler):
        
         # expected path: /redeem?email=xxx@somewhere&redmcode=xxxxxxxx
         elif service == '/redeem':
+            try:
+                temp = qrystmt.split('&')
+                emailstmts = temp[0].split('=')
+                codestmts = temp[1].split('=')
+                emailpara = emailstmts[0]
+                emailvalue = emailstmts[1]
+                codepara = codestmts[0]
+                codevalue = codestmts[1]
+            except:
+                self.wfile.write(ERROR_CMDER)
+                return
+            
+            if (emailpara != 'email') or (codepara != 'redmcode'):
+                self.wfile.write(ERROR_CMDER)
+                return
+            
             # 1. check redeem code and email is in registration
+            regicodes = dbm.getEmRegi(emailvalue)
+            print '>>>',regicodes
+            print '>>>',codevalue
+            if codevalue not in regicodes:
+                self.wfile.write(ERROR_NOREG)
+                return
+                
             # 2. check redeem code is not in redeem record
+            redmrecords = dbm.getEmRedm(emailvalue)
+            if codevalue in redmrecords:
+                self.wfile.write(ERROR_RCUSE)
+                return 
+                
             # 3. check email redeem times
-            # 4. save redeem record into database
+            redmtime = len(dbm.getEmRedm(emailvalue))
+            if redmtime >= 3:
+                self.wfile.write(ERROR_EMLMT)
+                return
+            
+            # 4. get gift and save redeem record into database
+            gift = self.getGift(codevalue)
+            dbm.saveGtRedm(codevalue, gift)
+            
             # 5. return message
-            self.wfile.write('<xml><result>suceess</result></xml>')
+            rpstmt = '<xml><result>gift redeem succss</result>\
+            <email>%s</email>\
+            <redmcode>%s</redmcode></xml>\
+            <gift>%s</gift>'%(emailvalue, codevalue, gift)
+            self.wfile.write(rpstmt)
         
         else:
             self.wfile.write(ERROR_NOSRV)
             
     def genRedmCode(self):
-        return '1234abcd'
+        ## ascii 'a' = 97, 'z' = 122
+        codespace = []
+        redmcode = ''
+        for num in range(10):
+            codespace.append(str(num))
+        for asc in range(97,123):
+            codespace.append(str(unichr(asc)))
+        for idx in range(8):
+            redmcode = redmcode+(random.choice(codespace))
+        print '[genRedmCode]',redmcode
+        return redmcode
+        
+    def getGift(self, code):
+        codesum = 0
+        for cha in code:
+            codesum = codesum + ord(cha)
+        select = codesum%len(GIFTLIST)
+        return GIFTLIST[select]
     
 if __name__=='__main__':
     svr = RedmServer()
