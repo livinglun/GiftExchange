@@ -1,0 +1,65 @@
+這份文件的目的是說明獎品兌換服務的架設與操作方法
+
+
+需求
+=====================
+1. Python 2.7 或以上。
+
+
+HTTP Server 架設方法
+=====================
+1. 以編輯器開啟 src/server/redmserver.py 檔案
+2. 更改 SERVERPATH, PORT 參數，保持現值代表將以本地端進行操作。
+3. 執行 src/server/redmserver.py 檔案即是 run 起 server 並持續等待事件。
+
+
+HTTP Client 呼叫方法
+=====================
+
+方法一： 以瀏覽器的網址列直接叫用服務
+
+信箱註冊命令：http://[SERVERPATH]:[PORT]/register?email=[email address]
+例如：http://127.0.0.1:8080/register?email=livinglun@gmail.com
+
+獎品兌換命令：http://[SERVERPATH]:[PORT]/redeem?email=[email address]&redmcode=[8bit code]
+例如：http://127.0.0.1:8080/redeem?email=livinglun@gmail.com&redmcode=12345678
+
+方法二： 以程式對服務進行呼叫
+
+1. 以編輯器開啟 src/client/userclient.py 檔案
+2. 更改 SERVERPATH, PORT 參數，保持現值代表將以本地端進行操作。
+3. 在命令列執行程式 userclient 並給予適當參數
+
+信箱註冊命令:\>python userclient.py [email address]
+例如:\>python userclient.py livinglun@gmail.com
+
+獎品兌換命令:\>python userclient.py [email address] [8bit code]
+例如:\>python userclient.py livinglun@gmail.com 12345678
+
+
+結果與錯誤檢查
+=====================
+1. 回傳結果以 xml 的方式結構化的顯現訊息。
+
+註冊結果
+<xml>
+    <result>簡述結果訊息</result>
+    <email>輸入的信箱</email>
+    <redmcode>產生的兌換碼</redmcode>
+</xml>
+
+兌換結果
+<xml>
+    <result>簡述結果訊息</result>
+    <email>輸入的信箱</email>
+    <redmcode>輸入的兌換碼</redmcode>
+    <gift>兌換獎品</gift>
+</xml>
+
+2. 考慮幾種錯誤訊息與說明條列如下，也可參考設計文件的考量。
+ERROR_CMDER = '<xml><error>command format error</error></xml>' # command error
+ERROR_EMFMT = '<xml><error>email format error</error></xml>' # email format error
+ERROR_EMLMT = '<xml><error>email redeem limitation is 3</error></xml>' # email redeem limitation
+ERROR_NOREG = '<xml><error>no such redeem code</error></xml>' # no such email and redeem code registration
+ERROR_RCUSE = '<xml><error>the redeem code has been used</error></xml>' # the redeem code has been used
+ERROR_NOSRV = '<xml><error>there provide no such service</error></xml>' # there is no such service

@@ -19,10 +19,16 @@ GIFTLIST = ['gift01','gift02','gift03','gift04','gift05','gift06','gift07','gift
 
 class RedmServer:
     def __init__(self):
-        self.dbm = dbman.DBmanager(DBPATH)
+        
         # 1. check database is existed
+        print '[RedmServer]database checking..',
         if not os.path.exists(DBPATH):
+            print 'no database'
+            self.dbm = dbman.DBmanager(DBPATH)
             self.dbm.createdatabase()
+            self.dbm.close()
+        else:
+            print 'ok'
             
         # 2. set parameter and start up the server
         server = HTTPServer
@@ -49,13 +55,17 @@ class RedmHandler(BaseHTTPRequestHandler):
             
         service = query[0]
         qrystmt = query[1] # query statement
-        print '[RedmHandler]service:', service
-        print '[RedmHandler]query:', qrystmt
+        #print '[RedmHandler]service:', service
+        #print '[RedmHandler]query:', qrystmt
             
         if service == '/register':
-            temp = qrystmt.split('=')
-            param = temp[0]
-            value = temp[1]
+            try:
+                temp = qrystmt.split('=')
+                param = temp[0]
+                value = temp[1]
+            except:
+                self.wfile.write(ERROR_CMDER)
+                return
             
             # 1. check email format
             if param != 'email':
@@ -81,7 +91,7 @@ class RedmHandler(BaseHTTPRequestHandler):
                     loop = False
                     
             # 4. save email and redeem code
-            dbm.saveEmRegi(value, redmcode)
+            dbm.saveEmRegi(redmcode, value)
             
             # 5. return message
             rpstmt = '<xml><result>email registration succss</result>\
@@ -109,8 +119,6 @@ class RedmHandler(BaseHTTPRequestHandler):
             
             # 1. check redeem code and email is in registration
             regicodes = dbm.getEmRegi(emailvalue)
-            print '>>>',regicodes
-            print '>>>',codevalue
             if codevalue not in regicodes:
                 self.wfile.write(ERROR_NOREG)
                 return
@@ -134,8 +142,8 @@ class RedmHandler(BaseHTTPRequestHandler):
             # 5. return message
             rpstmt = '<xml><result>gift redeem succss</result>\
             <email>%s</email>\
-            <redmcode>%s</redmcode></xml>\
-            <gift>%s</gift>'%(emailvalue, codevalue, gift)
+            <redmcode>%s</redmcode>\
+            <gift>%s</gift></xml>'%(emailvalue, codevalue, gift)
             self.wfile.write(rpstmt)
         
         else:
@@ -151,7 +159,6 @@ class RedmHandler(BaseHTTPRequestHandler):
             codespace.append(str(unichr(asc)))
         for idx in range(8):
             redmcode = redmcode+(random.choice(codespace))
-        print '[genRedmCode]',redmcode
         return redmcode
         
     def getGift(self, code):
