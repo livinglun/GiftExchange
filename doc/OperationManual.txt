@@ -11,6 +11,7 @@ HTTP Server 架設方法
 1. 以編輯器開啟 src/server/redmserver.py 檔案
 2. 更改 SERVERPATH, PORT 參數，保持現值代表將以本地端進行操作。
 3. 執行 src/server/redmserver.py 檔案即是 run 起 server 並持續等待事件。
+4. 當 Server 運行時，會檢查資料庫是否存在，若不存在，會自行新建一個符合設計的資料庫使用。
 
 
 HTTP Client 呼叫方法
