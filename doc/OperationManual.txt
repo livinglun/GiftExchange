@@ -1,62 +1,62 @@
-�o����󪺥ت��O�������~�I���A�Ȫ��[�]�P�ާ@��k
+這份文件的目的是說明獎品兌換服務的架設與操作方法
 
 
-�ݨD
+需求
 =====================
-1. Python 2.7 �ΥH�W�C
+1. Python 2.7 或以上。
 
 
-HTTP Server �[�]��k
+HTTP Server 架設方法
 =====================
-1. �H�s�边�}�� src/server/redmserver.py �ɮ�
-2. ��� SERVERPATH, PORT �ѼơA�O���{�ȥN���N�H���a�ݶi��ާ@�C
-3. ���� src/server/redmserver.py �ɮקY�O run �_ server �ë��򵥫ݨƥ�C
+1. 以編輯器開啟 src/server/redmserver.py 檔案
+2. 更改 SERVERPATH, PORT 參數，保持現值代表將以本地端進行操作。
+3. 執行 src/server/redmserver.py 檔案即是 run 起 server 並持續等待事件。
 
 
-HTTP Client �I�s��k
+HTTP Client 呼叫方法
 =====================
 
-��k�@�G �H�s���������}�C�����s�ΪA��
+方法一： 以瀏覽器的網址列直接叫用服務
 
-�H�c���U�R�O�Ghttp://[SERVERPATH]:[PORT]/register?email=[email address]
-�Ҧp�Ghttp://127.0.0.1:8080/register?email=livinglun@gmail.com
+信箱註冊命令：http://[SERVERPATH]:[PORT]/register?email=[email address]
+例如：http://127.0.0.1:8080/register?email=livinglun@gmail.com
 
-���~�I���R�O�Ghttp://[SERVERPATH]:[PORT]/redeem?email=[email address]&redmcode=[8bit code]
-�Ҧp�Ghttp://127.0.0.1:8080/redeem?email=livinglun@gmail.com&redmcode=12345678
+獎品兌換命令：http://[SERVERPATH]:[PORT]/redeem?email=[email address]&redmcode=[8bit code]
+例如：http://127.0.0.1:8080/redeem?email=livinglun@gmail.com&redmcode=12345678
 
-��k�G�G �H�{����A�ȶi��I�s
+方法二： 以程式對服務進行呼叫
 
-1. �H�s�边�}�� src/client/userclient.py �ɮ�
-2. ��� SERVERPATH, PORT �ѼơA�O���{�ȥN���N�H���a�ݶi��ާ@�C
-3. �b�R�O�C����{�� userclient �õ����A���Ѽ�
+1. 以編輯器開啟 src/client/userclient.py 檔案
+2. 更改 SERVERPATH, PORT 參數，保持現值代表將以本地端進行操作。
+3. 在命令列執行程式 userclient 並給予適當參數
 
-�H�c���U�R�O:\>python userclient.py [email address]
-�Ҧp:\>python userclient.py livinglun@gmail.com
+信箱註冊命令:\>python userclient.py [email address]
+例如:\>python userclient.py livinglun@gmail.com
 
-���~�I���R�O:\>python userclient.py [email address] [8bit code]
-�Ҧp:\>python userclient.py livinglun@gmail.com 12345678
+獎品兌換命令:\>python userclient.py [email address] [8bit code]
+例如:\>python userclient.py livinglun@gmail.com 12345678
 
 
-���G�P���~�ˬd
+結果與錯誤檢查
 =====================
-1. �^�ǵ��G�H xml ���覡���c�ƪ���{�T���C
+1. 回傳結果以 xml 的方式結構化的顯現訊息。
 
-���U���G
+註冊結果
 <xml>
-    <result>²�z���G�T��</result>
-    <email>��J���H�c</email>
-    <redmcode>���ͪ��I���X</redmcode>
+    <result>簡述結果訊息</result>
+    <email>輸入的信箱</email>
+    <redmcode>產生的兌換碼</redmcode>
 </xml>
 
-�I�����G
+兌換結果
 <xml>
-    <result>²�z���G�T��</result>
-    <email>��J���H�c</email>
-    <redmcode>��J���I���X</redmcode>
-    <gift>�I�����~</gift>
+    <result>簡述結果訊息</result>
+    <email>輸入的信箱</email>
+    <redmcode>輸入的兌換碼</redmcode>
+    <gift>兌換獎品</gift>
 </xml>
 
-2. �Ҽ{�X�ؿ��~�T���P�������C�p�U�A�]�i�Ѧҳ]�p��󪺦Ҷq�C
+2. 考慮幾種錯誤訊息與說明條列如下，也可參考設計文件的考量。
 ERROR_CMDER = '<xml><error>command format error</error></xml>' # command error
 ERROR_EMFMT = '<xml><error>email format error</error></xml>' # email format error
 ERROR_EMLMT = '<xml><error>email redeem limitation is 3</error></xml>' # email redeem limitation
