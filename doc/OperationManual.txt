@@ -31,11 +31,11 @@ HTTP Client 呼叫方法
 2. 更改 SERVERPATH, PORT 參數，保持現值代表將以本地端進行操作。
 3. 在命令列執行程式 userclient 並給予適當參數
 
-信箱註冊命令:\>python userclient.py [email address]
-例如:\>python userclient.py livinglun@gmail.com
+信箱註冊命令:\>python userclient.py register [email address]
+例如:\>python userclient.py register livinglun@gmail.com
 
-獎品兌換命令:\>python userclient.py [email address] [8bit code]
-例如:\>python userclient.py livinglun@gmail.com 12345678
+獎品兌換命令:\>python userclient.py redeem [email address] [8bit code]
+例如:\>python userclient.py redeem livinglun@gmail.com 12345678
 
 
 結果與錯誤檢查
